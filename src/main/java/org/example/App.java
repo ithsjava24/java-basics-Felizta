@@ -7,11 +7,14 @@ public class App {
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         //Array för att lagra elpriserna
-        ArrayList<Integer> elpriser = new ArrayList<>();
+        int[] elpriser = new int[24];
         char alternativ;
 
-        //Skapar menyn som en String
-        String menu = """
+
+
+        while(true) {
+            //Skapar menyn som en String
+            String menu = """
         Elpriser
         ========
         1. Inmatning
@@ -20,10 +23,8 @@ public class App {
         4. Bästa Laddningstid (4h)
         e. Avsluta
         """;
-        //Omvandlar menyn till en Byte array
-        byte[] menuBytes = menu.getBytes();
-
-        while(true) {
+            //Omvandlar menyn till en Byte array
+            byte[] menuBytes = menu.getBytes();
             System.out.print(new String(menuBytes));
 
             //Tar emot användarens input
@@ -31,39 +32,93 @@ public class App {
 
             switch(alternativ) {
                 case '1': //Inmatning
-                    elpriser.clear(); //Tömmer listan på gamla numemr innan nya matas in
-                    System.out.println("Skriv in elpriser för varje timme (kl 00.00-01.00 till 23-00) i hela öre: \r\n");
+                    inmatning(in, elpriser);
+                    break;
 
-                    //Loopar igenom alla dygnets timmar
-                    for(int hour = 0; hour < 24; hour++) {
-                        boolean korrektInmatning = false;
-
-                        do{
-                            try {
-                                System.out.print(String.format("%02d-%02d: ", hour, (hour + 1) % 24));
-                                int pris = Integer.parseInt(in.next());
-                                if (pris > 0) {
-                                    elpriser.add(pris);
-                                    korrektInmatning = true;
-                                } else {
-                                    System.out.println("Angivet pris måste vara positivt heltal i öre. Skriv igen\r\n");
-                                }
-                            } catch (NumberFormatException e) {
-                                System.out.println("Fel inmatning. Ange ett heltal.\r\n");
-                            }
-                        } while(!korrektInmatning);
-                    }
-                    System.out.println("Elpriser för hela dygnet angivna.\r\n");
+                case '2':
+                    statistik(elpriser);
                     break;
 
                 case 'e':
                 case 'E':
                     in.close();
-                    return;
+                    return; //Avslutar programmet
 
                 default:
                     System.out.println("Ogiltligt val. Ange ett av alternativen i listan.\r\n");
-                    }
+            }
+
+            in.nextLine();
         }
+    }
+
+    private static void inmatning(Scanner in, int[] elpriser) {
+        // Återställer alla priser till noll
+        Arrays.fill(elpriser, 0);
+
+
+        //Loopar igenom alla dygnets timmar
+        for(int hour = 0; hour < 24; hour++) {
+            while(true){
+                if (in.hasNextInt()){
+                    int pris = in.nextInt();
+                    elpriser[hour] = pris;
+                    break;
+                } else {
+                    System.out.println("Ikke godkänd inmatning. Ange öre i heltal.");
+                    in.next();
+                }
+            }
+        }
+    }
+
+    private static void statistik(int[] elpriser) {
+        if (elpriser[0] == 0 && ingaPriser(elpriser)) {
+            System.out.println("Inmatning inte gjord än");
+        }
+
+        int minPris = elpriser[0];
+        int maxPris = elpriser[0];
+        int minTimmar = 0;
+        int maxTimmar = 0;
+        int totalPris = 0;
+
+        for (int hour = 0; hour < 24; hour++) {
+            if(elpriser[hour] < minPris) {
+                minPris = elpriser[hour];
+                minTimmar = hour;
+            }
+            if(elpriser[hour] > maxPris) {
+                maxPris = elpriser[hour];
+                maxTimmar = hour;
+            }
+            totalPris += elpriser[hour];
+        }
+        //Räknar ut medel priset under dygnet
+        double medelPris = totalPris / 24.0;
+
+        //Formaterar om decimal tecknet till Svensk standard
+        String medelPrisFormatted = String.format("%.2f", medelPris).replace('.', ',');
+
+        String response = String.format("""
+                Lägsta pris: %02d-%02d, %d öre/kWh
+                Högsta pris: %02d-%02d, %d öre/kWh
+                Medelpris: %s öre/kWh
+                """,
+                minTimmar, (minTimmar + 1) % 24, minPris,
+                maxTimmar, (maxTimmar + 1) % 24, maxPris,
+                medelPrisFormatted);
+
+        // Display the results with desired formatting
+        System.out.println(response);
+    }
+
+    private static boolean ingaPriser(int[] elpriser) {
+        for (int pris : elpriser) {
+            if (pris != 0){
+                return false;
+            }
+        }
+        return true;
     }
 }
