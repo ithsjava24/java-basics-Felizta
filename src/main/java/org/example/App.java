@@ -1,6 +1,5 @@
 package org.example;
 
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class App {
@@ -25,9 +24,7 @@ public class App {
                     4. Bästa Laddningstid (4h)
                     e. Avsluta
                     """;
-            //Omvandlar menyn till en Byte array
-            byte[] menuBytes = menu.getBytes();
-            System.out.print(new String(menuBytes));
+            System.out.println(menu);
 
             //Tar emot användarens input
             alternativ = in.next().charAt(0);
@@ -43,6 +40,10 @@ public class App {
 
                 case '3':
                     sortera();
+                    break;
+
+                case '4':
+                    laddningsTid();
                     break;
 
                 case 'e':
@@ -63,18 +64,19 @@ public class App {
 
         //Loopar igenom alla dygnets timmar
         for (int hour = 0; hour < 24; hour++) {
-            System.out.print("Skiv elpris för varje timma " + hour + "-" + (hour + 1) + ": ");
+            System.out.print(hour + "-" + (hour + 1) + ": ");
             if (in.hasNextInt()) {
                 int pris = in.nextInt(); //Läser in varje elpris
                 elpriser[hour] = pris;
             } else {
-                System.out.println("Ikke godkänd inmatning. Ange öre i heltal.");
+                System.out.println("Ikke godkänd inmatning. Ange öre i heltal.\r\n");
                 in.next();
                 hour--;
             }
         }
     }
 
+    //Räknar ut högsta och lägsta pris under dygnet
     private static void statistik() {
         if (elpriser[0] == 0 && ingaPriser(elpriser)) {
             System.out.println("Inmatning inte gjord än\r\n");
@@ -109,26 +111,48 @@ public class App {
                 Medelpris: %s öre/kWh
                 """, minTimmar, (minTimmar + 1) % 24, minPris, maxTimmar, (maxTimmar + 1) % 24, maxPris, medelPrisFormatted);
 
-        // Display the results with desired formatting
+        // Visar priserna med rätt formattering
         System.out.println(response);
     }
 
+    // Sorterar priserna från dyrast till billigast
     public static void sortera() {
-        int[] sortCosts = Arrays.copyOf(elpriser, elpriser  .length);
+        int[] sortCosts = Arrays.copyOf(elpriser, elpriser.length);
         Arrays.sort(sortCosts);
 
         boolean[] written = new boolean[hours];
 
-        System.out.print("Dyrast till billigast tider:\n");
+        System.out.print("Dyrast till billigast tider:\r\n");
         for (int i = sortCosts.length - 1; i >= 0; i--) {
             for (int j = 0; j < elpriser.length; j++) {
                 if (elpriser[j] == sortCosts[i] && !written[j]) {
-                    System.out.printf("%02d-%02d %d öre\n", j, j + 1, elpriser[j]);
+                    System.out.printf("%02d-%02d %d öre\r\n", j, j + 1, elpriser[j]);
                     written[j] = true;
                     break;
                 }
             }
         }
+    }
+
+    private static void laddningsTid() {
+        int minSum = Integer.MAX_VALUE;
+        int startTimma = 0;
+
+        for(int i = 0; i <= hours -4; i++ ) {
+            int sum = elpriser[i] + elpriser[i + 1] + elpriser[i + 2] + elpriser[i + 3];
+            if (sum < minSum) {
+                minSum = sum;
+                startTimma = i;
+            }
+        }
+
+        double medelPris = minSum / 4.0;
+
+        String svar = String.format("""
+                Påbörja laddning klockan %d
+                Medelpris 4h: %.1f öre/kWh
+                """, startTimma, medelPris);
+        System.out.println(svar);
     }
 
     private static boolean ingaPriser(int[] elpriser) {
@@ -139,5 +163,4 @@ public class App {
         }
         return true;
     }
-
 }
