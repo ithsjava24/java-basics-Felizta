@@ -14,17 +14,7 @@ public class App {
 
 
         while (true) {
-            //Skapar menyn som en String
-            String menu = """
-                    Elpriser
-                    ========
-                    1. Inmatning
-                    2. Min, Max och Medel
-                    3. Sortera
-                    4. Bästa Laddningstid (4h)
-                    e. Avsluta
-                    """;
-            System.out.println(menu);
+            skrivMenu();
 
             //Tar emot användarens input
             alternativ = in.next().charAt(0);
@@ -48,7 +38,8 @@ public class App {
 
                 case 'e':
                 case 'E':
-                    in.close();
+                    //in.close();
+                    System.out.println("Avslutar programmet...\n");
                     return; //Avslutar programmet
 
                 default:
@@ -57,6 +48,20 @@ public class App {
 
             in.nextLine();
         }
+    }
+
+    private static void skrivMenu() {
+        //Skapar menyn som en String
+        String menu = """
+                Elpriser
+                ========
+                1. Inmatning
+                2. Min, Max och Medel
+                3. Sortera
+                4. Bästa Laddningstid (4h)
+                e. Avsluta
+                """;
+        System.out.println(menu);
     }
 
     private static void inmatning() {
@@ -126,7 +131,7 @@ public class App {
         for (int i = sortCosts.length - 1; i >= 0; i--) {
             for (int j = 0; j < elpriser.length; j++) {
                 if (elpriser[j] == sortCosts[i] && !written[j]) {
-                    System.out.printf("%02d-%02d %d öre\r\n", j, j + 1, elpriser[j]);
+                    System.out.printf("%02d-%02d %d öre\n", j, j + 1, elpriser[j]);
                     written[j] = true;
                     break;
                 }
